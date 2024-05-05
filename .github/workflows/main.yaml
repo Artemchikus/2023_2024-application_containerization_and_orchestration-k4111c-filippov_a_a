@@ -61,12 +61,12 @@ jobs:
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
   email:
-    needs: ["build"]
+    needs: build
     if: always()
     name: Send email
     runs-on: ubuntu-latest
     steps:
-      - name: Send mail on failure
+      - name: Send mail
         uses: dawidd6/action-send-mail@v3
         with:
           server_address: smtp.gmail.com
@@ -76,4 +76,4 @@ jobs:
           subject: Github Actions job result
           to: fil.ar.alex@gmail.com
           from: Github Actions (find-ship)
-          body: '"${{ github.job }}" job in worflow "${{ github.workflow }}" of "${{ github.repository }}" has finished with status "${{ needs.build.result }}".'
+          body: 'Worflow "${{ github.workflow }}" of "${{ github.repository }}" has finished with status "${{ needs.build.result }}".'
