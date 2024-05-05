@@ -60,3 +60,20 @@ jobs:
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
+  email:
+    needs: build
+    if: always()
+    name: Send email
+    runs-on: ubuntu-latest
+    steps:
+      - name: Send mail on failure
+        uses: dawidd6/action-send-mail@v3
+        with:
+          server_address: smtp.gmail.com
+          server_port: 465
+          username: ${{secrets.MAIL_USERNAME}}
+          password: ${{secrets.MAIL_PASSWORD}}
+          subject: Github Actions job result
+          to: fil.ar.alex@gmail.com
+          from: Github Actions (find-ship)
+          body: ${{ github.job }} job in worflow ${{ github.workflow }} of ${{ github.repository }} has finished with status ${{ job.status }}.
