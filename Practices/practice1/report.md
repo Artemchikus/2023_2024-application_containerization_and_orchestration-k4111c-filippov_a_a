@@ -1,12 +1,12 @@
-University: [ITMO University](https://itmo.ru/ru/)
-Faculty: [FICT](https://fict.itmo.ru)
-Course: [Application containerization and orchestration](https://github.com/itmo-ict-faculty/application-containerization-and-orchestration)
-Year: 2023/2024
-Group: K4111c
-Author: Filippov Artem Alekseevich
-Practice: practice1
-Date of create: 01.05.2024
-Date of finished: 03.05.2024
+University: [ITMO University](https://itmo.ru/ru/)  
+Faculty: [FICT](https://fict.itmo.ru)  
+Course: [Application containerization and orchestration](https://github.com/itmo-ict-faculty/application-containerization-and-orchestration)  
+Year: 2023/2024  
+Group: K4111c  
+Author: Filippov Artem Alekseevich  
+Practice: practice1  
+Date of create: 01.05.2024  
+Date of finished: 03.05.2024  
 
 Цель: изучить практическое применение технологии контейнеризации при разработке микросервисных приложений
 
