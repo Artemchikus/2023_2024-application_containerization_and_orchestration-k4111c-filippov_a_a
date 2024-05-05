@@ -1,0 +1,85 @@
+{{-  $appImage := printf "%s/%s:%s" .Values.image.repository .Values.app.image .Values.image.tag -}}
+{{-  $migrateImage := printf "%s/%s:%s" .Values.image.repository .Values.migrate.image .Values.image.tag -}}
+{{- $waitScript := printf "until pg_isready -d %s -h %s -p %v -U %s; do echo waiting for database; sleep 2; done;" .Values.db.name .Values.db.host .Values.db.port .Values.db.user -}}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Chart.Name }}
+  labels:
+    app: {{ .Chart.Name }}
+spec:
+  revisionHistoryLimit: 3
+  replicas: {{ .Values.app.replicas }}
+  selector:
+    matchLabels:
+      app: {{ .Chart.Name }}
+  template:
+    metadata:
+      labels:
+        app: {{ .Chart.Name }}
+    spec:
+      initContainers:
+        - name: wait-for-db
+          image: postgres:latest
+          imagePullPolicy: Always
+          command: ["sh"]
+          args: ["-c", {{ $waitScript }}]
+        - name: migrate
+          image: {{ $migrateImage }}
+          imagePullPolicy: Always
+          env:
+            - name: GOOSE_DRIVER
+              value: {{ .Values.migrate.driver | quote }}
+            - name: GOOSE_DBSTRING
+              valueFrom:
+                secretKeyRef:
+                  name: postgres-secret
+                  key: postgres-connection-string
+      containers:
+        - name: app
+          image: {{ $appImage }}
+          imagePullPolicy: Always
+          securityContext:
+            runAsUser: 7000
+            allowPrivilegeEscalation: false
+          ports:
+            - containerPort: {{ .Values.app.port }}
+              name: http
+              protocol: TCP
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: {{ .Values.app.port }}
+              scheme: HTTP
+            initialDelaySeconds: 10
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: {{ .Values.app.port }}
+              scheme: HTTP
+            initialDelaySeconds: 10
+            periodSeconds: 10
+          volumeMounts:
+            - name: app-config
+              mountPath: /app/config.yaml
+              subPath: config.yaml
+      volumes:
+        - name: app-config
+          configMap:
+            name: {{ .Chart.Name }}-config
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Chart.Name }}
+spec:
+  selector:
+    app: {{ .Chart.Name }}
+  type: NodePort
+  ports:
+    - name: http
+      port: {{ .Values.app.port }}
+      targetPort: {{ .Values.app.port }}
+      protocol: TCP

@@ -1,0 +1,37 @@
+services:
+  postgres:
+    image: "postgres:latest"
+    container_name: postgres
+    ports:
+      - 5432:5432
+    environment:
+      POSTGRES_DB: db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+
+  migrate:
+    image: "artemchikus/find-ship-migrations:latest"
+    container_name: find-ship-migrations
+    depends_on:
+      postgres:
+        condition: service_started
+    environment:
+      GOOSE_DBSTRING: "postgres://postgres:password@postgres:5432/db?connect_timeout=5&sslmode=disable&search_path=public"
+      GOOSE_DRIVER: postgres
+    links:
+      - postgres
+
+  app:
+    image: "artemchikus/find-ship:latest"
+    volumes:
+      - ./test/conf.yaml:/app/config.yaml
+    container_name: find-ship
+    depends_on:
+      postgres:
+        condition: service_started
+      migrate:
+        condition: service_completed_successfully
+    ports:
+      - 80:80
+    links:
+      - postgres

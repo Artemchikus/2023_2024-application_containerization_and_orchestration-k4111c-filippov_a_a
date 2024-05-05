@@ -1,0 +1,35 @@
+{{-  $updateUrlsImage := printf "%s/%s:%s" .Values.image.repository .Values.update_urls.image .Values.image.tag -}}
+---
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: {{ .Chart.Name }}-update-urls
+  labels:
+    app: {{ .Chart.Name }}-update-urls
+spec:
+  schedule: "0 5 * * *" # 8:00 MSK
+  concurrencyPolicy: Replace
+  suspend: {{ .Values.update_urls.enabled }}
+  jobTemplate:
+    spec:
+      backoffLimit: 0
+      ttlSecondsAfterFinished: 600
+      template:
+        metadata:
+          annotations:
+          labels:
+            app: {{ .Chart.Name }}-update-urls
+        spec:
+          restartPolicy: Never
+          containers:
+            - name: app
+              image: {{ $updateUrlsImage }}
+              imagePullPolicy: Always
+              volumeMounts:
+                - name: update-urls-config
+                  mountPath: /app/config.yml
+                  subPath: config.yml
+          volumes:
+            - name: update-urls-config
+              configMap:
+                name: {{ .Chart.Name }}-update-urls-config

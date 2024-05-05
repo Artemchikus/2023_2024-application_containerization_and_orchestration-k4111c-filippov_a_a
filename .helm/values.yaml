@@ -1,0 +1,27 @@
+db:
+  user: postgres
+  name: db
+  host: postgres
+  port: 5432
+  search_path: public
+  replicas: 1
+  password: password
+  connect_timeout: 5
+
+app:
+  port: 80
+  replicas: 1
+  image: find-ship
+  api_version: v1
+
+update_urls:
+  enabled: true
+  image: find-ship-update-urls
+
+image:
+  repository: docker.io/artemchikus
+  tag: latest
+
+migrate:
+  image: find-ship-migrations
+  driver: postgres

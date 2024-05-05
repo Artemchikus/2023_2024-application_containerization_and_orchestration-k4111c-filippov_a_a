@@ -1,0 +1,316 @@
+definitions:
+  api.ChannelResponse:
+    properties:
+      channel_name:
+        type: string
+      channel_type:
+        type: string
+      channel_url:
+        type: string
+      created_at:
+        type: string
+      id:
+        type: integer
+      site_url:
+        type: string
+      updated_at:
+        type: string
+    type: object
+  api.ChannelsResponse:
+    properties:
+      data:
+        items:
+          $ref: '#/definitions/storage.VKChannel'
+        type: array
+    type: object
+  api.CreateVKChannelRequest:
+    properties:
+      channel_name:
+        type: string
+      channel_type:
+        type: string
+      channel_url:
+        type: string
+    type: object
+  api.ErrorResponse:
+    properties:
+      error:
+        type: string
+    type: object
+  api.IDResponse:
+    properties:
+      id:
+        type: integer
+    type: object
+  api.MetricsResponse:
+    properties:
+      avg_req:
+        $ref: '#/definitions/metrix.AvgReqData'
+      current_req:
+        $ref: '#/definitions/metrix.CurrentReqData'
+      db_metrix:
+        $ref: '#/definitions/metrix.DbMetrixData'
+      resp_time:
+        $ref: '#/definitions/metrix.RespTimeData'
+    type: object
+  api.PatchVKChannelRequest:
+    properties:
+      channel_name:
+        type: string
+      channel_type:
+        type: string
+      channel_url:
+        type: string
+      site_url:
+        type: string
+    type: object
+  metrix.AvgReqData:
+    properties:
+      fifteen_min_avg_req:
+        type: number
+      five_min_avg_req:
+        type: number
+      one_min_avg_req:
+        type: number
+    type: object
+  metrix.CurrentReqData:
+    properties:
+      current_req_num:
+        type: integer
+    type: object
+  metrix.DbMetrixData:
+    properties:
+      acquire_count:
+        description: AcquireCount returns the cumulative count of successful acquires
+          from the pool.
+        type: integer
+      acquire_duration:
+        description: |-
+          AcquireDuration returns the total duration of all successful acquires from
+          the pool.
+        type: integer
+      acquired_conns:
+        description: AcquiredConns returns the number of currently acquired connections
+          in the pool.
+        type: integer
+      canceled_acquire_count:
+        description: |-
+          CanceledAcquireCount returns the cumulative count of acquires from the pool
+          that were canceled by a context.
+        type: integer
+      constructing_conns:
+        description: |-
+          ConstructingConns returns the number of conns with construction in progress in
+          the pool.
+        type: integer
+      empty_acquire_count:
+        description: |-
+          EmptyAcquireCount returns the cumulative count of successful acquires from the pool
+          that waited for a resource to be released or constructed because the pool was
+          empty.
+        type: integer
+      idle_conns:
+        description: IdleConns returns the number of currently idle conns in the pool.
+        type: integer
+      max_conns:
+        description: MaxConns returns the maximum size of the pool.
+        type: integer
+      max_idle_destroy_count:
+        description: |-
+          MaxIdleDestroyCount returns the cumulative count of connections destroyed because
+          they exceeded MaxConnIdleTime.
+        type: integer
+      max_lifetime_destroy_count:
+        description: |-
+          MaxLifetimeDestroyCount returns the cumulative count of connections destroyed
+          because they exceeded MaxConnLifetime.
+        type: integer
+      new_conns_count:
+        description: NewConnsCount returns the cumulative count of new connections
+          opened.
+        type: integer
+      total_conns:
+        description: |-
+          TotalConns returns the total number of resources currently in the pool.
+          The value is the sum of ConstructingConns, AcquiredConns, and
+          IdleConns.
+        type: integer
+    type: object
+  metrix.RespTimeData:
+    properties:
+      fifteen_min_avg_resp_time:
+        type: number
+      five_min_avg_resp_time:
+        type: number
+      one_min_avg_resp_time:
+        type: number
+    type: object
+  storage.VKChannel:
+    properties:
+      channel_name:
+        type: string
+      channel_type:
+        type: string
+      channel_url:
+        type: string
+      created_at:
+        type: string
+      id:
+        type: integer
+      site_url:
+        type: string
+      updated_at:
+        type: string
+    type: object
+info:
+  contact: {}
+  description: This is a vk channles site parser.
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+  title: Find Ship API
+  version: "1.0"
+paths:
+  /api/v1/ship:
+    get:
+      description: returns ships
+      parameters:
+      - description: Channel type
+        in: query
+        name: type
+        type: string
+      - description: Channel name
+        in: query
+        name: name
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/api.ChannelsResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/api.ErrorResponse'
+      summary: GetShips
+    post:
+      consumes:
+      - application/json
+      description: creates new ship
+      parameters:
+      - description: VK Channel
+        in: body
+        name: vk_channel
+        required: true
+        schema:
+          $ref: '#/definitions/api.CreateVKChannelRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/api.IDResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/api.ErrorResponse'
+        "422":
+          description: Unprocessable Entity
+          schema:
+            $ref: '#/definitions/api.ErrorResponse'
+      summary: CreateShip
+  /api/v1/ship/{id}:
+    delete:
+      description: deletes ship by id
+      parameters:
+      - description: Channel ID
+        in: path
+        name: id
+        required: true
+        type: string
+      responses:
+        "200":
+          description: OK
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/api.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/api.ErrorResponse'
+      summary: DeleteShip
+    get:
+      description: returns ship by id
+      parameters:
+      - description: Channel ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/api.ChannelResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/api.ErrorResponse'
+      summary: GetShipByID
+    patch:
+      consumes:
+      - application/json
+      description: updates ship
+      parameters:
+      - description: Channel ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: VK Channel
+        in: body
+        name: vk_channel
+        required: true
+        schema:
+          $ref: '#/definitions/api.PatchVKChannelRequest'
+      responses:
+        "200":
+          description: OK
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/api.ErrorResponse'
+        "422":
+          description: Unprocessable Entity
+          schema:
+            $ref: '#/definitions/api.ErrorResponse'
+      summary: UpdateShip
+  /health:
+    get:
+      description: health check
+      produces:
+      - text/plain
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+      summary: HealthCheck
+  /metrics:
+    get:
+      description: returns service metrics
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/api.MetricsResponse'
+      summary: Metrics
+swagger: "2.0"
