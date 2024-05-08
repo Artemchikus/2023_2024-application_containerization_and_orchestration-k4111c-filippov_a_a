@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"net/http"
 	"strconv"
+	"strings"
 
 	"github.com/gorilla/mux"
 )
@@ -99,20 +100,35 @@ func (s *server) getShipsByType(w http.ResponseWriter, r *http.Request, typeShip
 // @Failure 422 {object} ErrorResponse
 // @Router /api/v1/ship [post]
 func (s *server) postShip(w http.ResponseWriter, r *http.Request) {
-	var ship storage.VKChannel
-	if err := json.NewDecoder(r.Body).Decode(&ship); err != nil {
-		s.error(w, r, http.StatusBadRequest, err)
+	var shipReq CreateVKChannelRequest
+	if err := json.NewDecoder(r.Body).Decode(&shipReq); err != nil {
+		s.error(w, r, http.StatusBadRequest, fmt.Errorf("invalid request body"))
 		return
 	}
 	defer r.Body.Close()
 
-	suteURL, err := s.vkClient.GetChannelSiteUrl(r.Context(), *ship.ChannelURL)
+	if err := s.validate(shipReq); err != nil {
+		s.error(w, r, http.StatusUnprocessableEntity, err)
+		return
+	}
+
+	if _, err := s.storage.GetVKChannelByName(r.Context(), shipReq.ChannelName); err == nil {
+		s.error(w, r, http.StatusUnprocessableEntity, fmt.Errorf("channel with name %s already exists", shipReq.ChannelName))
+		return
+	}
+
+	suteURL, err := s.vkClient.GetChannelSiteUrl(r.Context(), shipReq.ChannelURL)
 	if err != nil {
 		s.error(w, r, http.StatusUnprocessableEntity, err)
 		return
 	}
 
-	ship.SiteURL = &suteURL
+	ship := storage.VKChannel{
+		ChannelName: &shipReq.ChannelName,
+		ChannelURL:  &shipReq.ChannelURL,
+		ChannelType: &shipReq.ChannelType,
+		SiteURL:     &suteURL,
+	}
 
 	id, err := s.storage.CreateVKChannel(r.Context(), ship)
 	if err != nil {
@@ -177,16 +193,32 @@ func (s *server) patchShip(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var ship storage.VKChannel
-	if err := json.NewDecoder(r.Body).Decode(&ship); err != nil {
-		s.error(w, r, http.StatusBadRequest, err)
+	var shipReq PatchVKChannelRequest
+	if err := json.NewDecoder(r.Body).Decode(&shipReq); err != nil {
+		s.error(w, r, http.StatusBadRequest, fmt.Errorf("invalid request body"))
 		return
 	}
 	defer r.Body.Close()
 
-	ship.Id = idInt
+	if err := s.validate(shipReq); err != nil {
+		s.error(w, r, http.StatusUnprocessableEntity, err)
+		return
+	}
+
+	ship := storage.VKChannel{
+		ChannelName: shipReq.ChannelName,
+		ChannelURL:  shipReq.ChannelURL,
+		ChannelType: shipReq.ChannelType,
+		SiteURL:     shipReq.SiteURL,
+		Id:          idInt,
+	}
 
 	if err := s.storage.UpdateVKChannel(r.Context(), ship); err != nil {
+		if strings.Contains(err.Error(), "not found") {
+			s.error(w, r, http.StatusNotFound, err)
+			return
+		}
+
 		s.error(w, r, http.StatusUnprocessableEntity, err)
 		return
 	}
