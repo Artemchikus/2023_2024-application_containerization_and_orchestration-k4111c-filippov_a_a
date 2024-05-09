@@ -6,8 +6,8 @@ compose-down:
 
 docker-build:
 	docker build -t docker.io/artemchikus/find-ship:latest -f Dockerfile .
-	docker build -t docker.io/artemchikus/find-ship-migrations:latest -f .\storage\Dockerfile .
-	docker build -t docker.io/artemchikus/find-ship-update-urls:latest -f .\cmd\cron_lobs\update_urls\Dockerfile .
+	docker build -t docker.io/artemchikus/find-ship-migrations:latest -f storage/Dockerfile .
+	docker build -t docker.io/artemchikus/find-ship-update-urls:latest -f cmd/cron_lobs/update_urls/Dockerfile .
 
 docker-push:
 	docker push docker.io/artemchikus/find-ship:latest
@@ -28,11 +28,14 @@ build:
 
 run: build
 	docker run -e POSTGRES_PASSWORD=password -e POSTGRES_USER=postgres -e POSTGRES_DB=db -d -p 5432:5432 postgres
-	./find-ship -conf test/conf.yaml
+	./find-ship -conf examples/conf.yaml
 
 swagger:
 	cd cmd/app/api
-	swag init --parseDependency  -generalInfo router.go --parseInternal
+	swag init --parseDependency -generalInfo router.go --parseInternal
 
 busybox:
 	kubectl run temporary --image=busybox:latest -i --tty
+
+test:
+	go test ./...

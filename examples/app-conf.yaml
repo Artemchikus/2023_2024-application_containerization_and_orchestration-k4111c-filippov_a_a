@@ -1,0 +1,11 @@
+### CONFIG START ###
+app:
+  port: 80
+db:
+  host: localhost
+  port: 5432
+  user: postgres
+  name: db
+  search_path: public
+  password: password
+### CONFIG END ###

@@ -24,7 +24,7 @@ services:
   app:
     image: "artemchikus/find-ship:latest"
     volumes:
-      - ./test/conf.yaml:/app/config.yaml
+      - examples/conf.yaml:/app/config.yaml
     container_name: find-ship
     depends_on:
       postgres:

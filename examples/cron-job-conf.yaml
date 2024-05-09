@@ -1,0 +1,5 @@
+### CONFIG START ###
+service_url: app
+service_api: api/v1
+service_port: 80
+### CONFIG END ###
