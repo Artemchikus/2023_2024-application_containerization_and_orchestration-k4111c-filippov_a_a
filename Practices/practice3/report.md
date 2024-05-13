@@ -5,8 +5,8 @@ Year: 2023/2024
 Group: K4111c  
 Author: Filippov Artem Alekseevich  
 Practice: practice3  
-Date of create: 20.09.2024  
-Date of finished: 31.09.2024  
+Date of create: 01.05.2024  
+Date of finished: 03.05.2024  
 
 Цель: установить и настроить специальные инструменты для автоматизации процесса тестирования и развертывания программного обеспечения.
 
